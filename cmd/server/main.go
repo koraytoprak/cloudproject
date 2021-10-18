@@ -12,35 +12,6 @@ func main() {
 	os.Exit(start())
 }
 
-host := getStringOrDefault("HOST", "localhost")
-	port := getIntOrDefault("PORT", 8080)
-
-	s := server.New(server.Options{
-		Host: host,
-		Port: port,
-	})
-
-	var eg errgroup.Group
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-	defer stop()
-
-	eg.Go(func() error {
-		<-ctx.Done()
-		if err := s.Stop(); err != nil {
-			log.Info("Error stopping server", zap.Error(err))
-			return err
-		}
-		return nil
-	})
-
-	if err := s.Start(); err != nil {
-		log.Info("Error starting server", zap.Error(err))
-		return 1
-	}
-
-	if err := eg.Wait(); err != nil {
-		return 1
-	}
 
 func start() int {
 	s := server.New(server.Options{
@@ -93,3 +64,33 @@ func getIntOrDefault(name string, defaultV int) int {
 	}
 	return vAsInt
 }
+
+host := getStringOrDefault("HOST", "localhost")
+	port := getIntOrDefault("PORT", 8080)
+
+	s := server.New(server.Options{
+		Host: host,
+		Port: port,
+	})
+
+	var eg errgroup.Group
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
+	eg.Go(func() error {
+		<-ctx.Done()
+		if err := s.Stop(); err != nil {
+			log.Info("Error stopping server", zap.Error(err))
+			return err
+		}
+		return nil
+	})
+
+	if err := s.Start(); err != nil {
+		log.Info("Error starting server", zap.Error(err))
+		return 1
+	}
+
+	if err := eg.Wait(); err != nil {
+		return 1
+	}

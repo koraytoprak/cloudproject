@@ -10,17 +10,16 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
-type Server struct {
-	address string
-	mux     chi.Router
-	server  *http.Server
-}
-
-type Options struct {
-	Host string
-	Port int
+func New(opts Options) *Server {
+	if opts.Log == nil {
+		opts.Log = zap.NewNop()
+	}
+	return &Server{
+		log: opts.Log,
+	}
 }
 
 func New(opts Options) *Server {
@@ -50,7 +49,6 @@ func (s *Server) Start() error {
 	return nil
 }
 
-// Stop the Server gracefully within the timeout.
 func (s *Server) Stop() error {
 	fmt.Println("Stopping")
 
@@ -62,4 +60,34 @@ func (s *Server) Stop() error {
 	}
 
 	return nil
+}
+
+func (s *Server) Start() error {
+
+	s.log.Info("Starting", zap.String("address", s.address))
+
+}
+
+func (s *Server) Stop() error {
+	s.log.Info("Stopping")
+
+}
+
+type Server struct {
+	address string
+	mux     chi.Router
+	server  *http.Server
+}
+
+type Options struct {
+	Host string
+	Port int
+}
+
+type Server struct {
+	log *zap.Logger
+}
+
+type Options struct {
+	Log *zap.Logger
 }
